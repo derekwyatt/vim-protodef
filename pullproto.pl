@@ -52,6 +52,28 @@ while (<STDIN>)
     my $class = "";
     ($linenum, $function, $class) = split /\|/, $_;
     my @temp = @c;
+
+    # Hideous hack... look for "signals:" before the function's line.  If you
+    # find it then this function is actually a Qt signal and not a regular
+    # function, in which case, we don't want to emit it into the
+    # implementation.  Ugly ugly ugly...
+    #
+    # There's probably some awesome negative-lookahead RE for this, but I
+    # can't figure out what it would be, nor if that would even be better :)
+    #
+    my @upto = reverse @temp[0..$linenum];
+    my $signal = 0;
+    foreach my $l (@upto) {
+      $l =~ s!//.*$!!;
+      if ($l =~ /\bsignals\b\s*:\s*$/) {
+        $signal = 1;
+        last;
+      } elsif ($l =~ /^\s*[\s\w]+:\s*$/) {
+        last;
+      }
+    }
+    next if ($signal);
+
     if ($temp[$linenum - 2] =~ m/$function/)
     {
         @temp = @temp[$linenum - 1..$#temp]
@@ -73,7 +95,7 @@ while (<STDIN>)
     $justclass = $class if !defined($justclass) || $justclass eq "";
     if ($function eq $justclass || $function eq "~$justclass")
     {
-		($fname, $post) = $content =~ m/(\Q$function\E$matched?)\s*(\([^\)]*\)[^;]*);/m; # (Matt Spear) added \Q\E and $matched
+        ($fname, $post) = $content =~ m/(\Q$function\E$matched?)\s*(\([^\)]*\)[^;]*);/m; # (Matt Spear) added \Q\E and $matched
     }
     else
     {
@@ -84,13 +106,12 @@ while (<STDIN>)
         $post = @a[4];
     }
     print "==\n";
+    my $toprint = "$pre$fname$post";
     if ($class ne "")
     {
-        print "$pre$class" . "::" . "$fname$post";
+        $toprint = "$pre$class" . "::" . "$fname$post";
     }
-    else
-    {
-        print "$pre$fname$post";
-    }
+    $toprint =~ s/^\s*//;
+    print $toprint;
     print "\n";
 }
