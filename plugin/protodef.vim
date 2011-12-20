@@ -41,7 +41,7 @@ let g:protodef_ctags_flags = '--language-force=c++ --c++-kinds=+p-cdefglmnstuvx 
 
 " The path to the pullproto.pl script that's included as part of protodef
 if !exists('g:protodefprotogetter')
-    let g:protodefprotogetter = substitute($VIM, '\\', '/', 'g') . '/pullproto.pl'
+    let g:protodefprotogetter = expand("<sfile>:p:h:h") . '/pullproto.pl'
 endif
 
 " This is a simple dictionary of default values that are set up for various data
@@ -128,7 +128,8 @@ function! s:GetFunctionPrototypesForCurrentBuffer(opts)
     endif
     if companion != ''
         " Get the data from ctags
-        let ctagsoutput = system(g:protodefctagsexe . ' ' . g:protodef_ctags_flags . ' ' . companion)
+        let ctagscmd = g:protodefctagsexe . ' ' . g:protodef_ctags_flags . ' ' . companion
+        let ctagsoutput = system(ctagscmd)
         if ctagsoutput == ''
             return []
         endif
