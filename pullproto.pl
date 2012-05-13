@@ -73,8 +73,7 @@ while (<STDIN>)
       }
     }
     next if ($signal);
-
-    if ($temp[$linenum - 2] =~ m/$function/)
+    if ($temp[$linenum - 2] =~ m/\Q$function\E/)
     {
         @temp = @temp[$linenum - 1..$#temp]
     }
