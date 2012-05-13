@@ -187,6 +187,8 @@ calling the function:
 							*protodef-changes*
 A. Change History~
 
+0.9.5   - Fix for operator[] from johndoe1234 (github)
+
 0.9.4
 	- Made sure that we need at least 7.0 (Timon Kelter)
 	- Introduced the disable_protodef_sorting variable.
