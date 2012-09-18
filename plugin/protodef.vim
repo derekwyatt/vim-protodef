@@ -140,6 +140,7 @@ function! s:GetFunctionPrototypesForCurrentBuffer(opts)
             " Get rid of the regular expression that ctags has given us as
             " we don't need it and it merely causes problems if there is a
             " tab in the prototype at all
+            let origline = line
             let line = substitute(line, '/\^.\{-}\$/;', 'removed', '')
             let parts = split(line, "\t")
             let fname = parts[0]
@@ -163,8 +164,10 @@ function! s:GetFunctionPrototypesForCurrentBuffer(opts)
                     let implementation = matchstr(parts[5], 'implementation:\zs.*\ze')
                 endif
             endif
-            if implementation !=# 'pure virtual'
-                call add(commands, linenum . '|' . fname . '|' . class)
+            if matchstr( origline, "= default;" ) == "" && matchstr( origline, "= delete;" ) == ""
+                if implementation !=# 'pure virtual'
+                    call add(commands, linenum . '|' . fname . '|' . class)
+                endif
             endif
         endfor
         " Make the call to the pullproto.pl script to get the full prototype
