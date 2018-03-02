@@ -99,18 +99,22 @@ while (<STDIN>)
     else
     {
         # Paolo Capriotti - Simplify function regexp and fix bug for pointer and reference return types
-        my @a = $content =~ m/((const)?\s*(unsigned)?\s*\S+\s*[\*&]?)(\Q$function\E$matched?)\s*(\([^\)]*\)[^;]*);/m; # (Matt Spear) added \Q\E and $matched
+        my @a = $content =~ m/((const)?\s*(unsigned)?\s*\S+\s*[\*&]?)(\Q$function\E$matched?)\s*(\([^\)]*\))(\s*[^;]*?)\s*;/m; # (Matt Spear) added \Q\E and $matched
         $pre = @a[0];
         $fname = @a[3];
         $post = @a[4];
+        ($postpost = @a[5]) =~ s!override!!;
     }
     print "==\n";
-    my $toprint = "$pre$fname$post";
-    if ($class ne "")
+    if ($postpost !~ /=\s*0/) # avoid collecting pure virtual methods
     {
-        $toprint = "$pre$class" . "::" . "$fname$post";
+        my $toprint = "$pre$fname$post$postpost";
+        if ($class ne "")
+        {
+            $toprint = "$pre$class" . "::" . "$fname$post$postpost";
+        }
+        $toprint =~ s/^\s*//;
+        print $toprint;
+        print "\n";
     }
-    $toprint =~ s/^\s*//;
-    print $toprint;
-    print "\n";
 }
